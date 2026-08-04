@@ -1,0 +1,14 @@
+projects:
+  - id: sample-local
+    name: Sample Local Model
+    model: data/sample.ttl
+    mapping: data/sample-mapping.yaml
+
+  - id: sample-online-basic-auth
+    name: Sample Online Model (Basic Auth)
+    model: https://example.org/rdf/data?graph=https%3A%2F%2Fexample.org%2Fgraph%2Fdemo
+    mapping: data/sample-mapping.yaml
+    source_auth:
+      type: basic
+      username: demo-user
+      password: demo-password
