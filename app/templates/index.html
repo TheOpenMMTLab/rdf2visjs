@@ -1,30 +1,50 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
-    <title>Index</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projektübersicht</title>
     <link rel="icon" type="image/png" href="/favicon.png">
-
+    <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-    <h1>
-        <a href="/" style="text-decoration: none;" title="Zur Startseite">
-            <img src="/favicon.png" alt="Symbol" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 8px;"">
-        </a>
-        Projektübersicht
-    </h1>
+    <div class="page-bg-shape page-bg-shape-a"></div>
+    <div class="page-bg-shape page-bg-shape-b"></div>
 
-    <ul>
-        {% for project in projects %}
-            <li>
-                <strong>{{ project.name }}</strong><br>
-                ID: {{ project.id }}<br>
-                Modell: {{ project.model }}<br>
-                Mapping: {{ project.mapping }}<br>
-                <a href="/project/{{ project.id }}">Graph anzeigen</a>
-            </li>
-        {% endfor %}
-    </ul>
+    <main class="page-shell">
+        <header class="hero-panel reveal">
+            <a href="/" class="brand-link" title="Zur Startseite">
+                <img src="/favicon.png" alt="Symbol" class="brand-icon">
+                <span class="brand-name">RDF2Vis</span>
+            </a>
+            <h1>Projektübersicht</h1>
+            <p>
+                Wähle ein Projekt und öffne den interaktiven Graphen mit Ansichten, Knoteninformationen
+                und Filtermöglichkeiten.
+            </p>
+        </header>
 
-
+        <section class="project-grid">
+            {% for project in projects %}
+            <article class="project-card reveal" style="--delay: {{ loop.index0 * 0.06 }}s;">
+                <div class="project-card-head">
+                    <span class="project-chip">{{ project.id }}</span>
+                    <h2>{{ project.name }}</h2>
+                </div>
+                <dl class="project-meta">
+                    <div>
+                        <dt>Modell</dt>
+                        <dd>{{ project.model }}</dd>
+                    </div>
+                    <div>
+                        <dt>Mapping</dt>
+                        <dd>{{ project.mapping }}</dd>
+                    </div>
+                </dl>
+                <a class="project-link" href="/project/{{ project.id }}">Graph öffnen</a>
+            </article>
+            {% endfor %}
+        </section>
+    </main>
 </body>
 </html>

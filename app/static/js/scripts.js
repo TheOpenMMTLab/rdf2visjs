@@ -103,8 +103,21 @@ function createNetwork(graph) {
     // Leeren (optional)
     $('#viewSelector').empty();
 
+    const allViewLabel = graph.views?.all || 'Alle';
+
+    $('#viewSelector').append(
+      $('<option>', {
+        value: 'all',
+        text: allViewLabel
+      })
+    );
+
     // Optionen hinzufügen
     $.each(graph.views, function(key, label) {
+      if (key === 'all') {
+        return;
+      }
+
       $('#viewSelector').append(
         $('<option>', {
           value: key,
@@ -115,10 +128,15 @@ function createNetwork(graph) {
 
 
     $('#viewSelector').on('change', function () {
-      view = $(this).val();
+      const view = $(this).val();
       console.log("View changed to: " + view);
       
       nodes.get().forEach(function (node) {
+        if (view === 'all') {
+          nodes.update({ id: node.id, hidden: false });
+          return;
+        }
+
         if (node.user_data?.views.includes(view)) {
           nodes.update({ id: node.id, hidden: false });
         } else {
@@ -168,6 +186,7 @@ function init() {
 function loadGraph(projectId) {
 
     init();
+  $('#graphError').removeClass('show').text('');
 
     // API Call mit getJSON
     $.getJSON('/graph/'+projectId, function(data) {
@@ -177,6 +196,11 @@ function loadGraph(projectId) {
 
     }).fail(function(jqxhr, textStatus, error) {
         console.log("Error: " + textStatus + ", " + error);
+        let message = "Graph konnte nicht geladen werden.";
+        if (jqxhr.responseText) {
+          message += " " + jqxhr.responseText;
+        }
+        $('#graphError').addClass('show').text(message);
     });
 
 }

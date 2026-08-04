@@ -2,31 +2,42 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ project.name }}</title>
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="stylesheet" href="/css/styles.css">
 
 </head>
 <body>
-  <h2>
-    <a href="/" style="text-decoration: none;" title="Zur Startseite">
-      <img src="/favicon.png" alt="Symbol" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 8px;"">
-    </a>
-    Projekt {{ project.name }}
-    
-  </h2>
-  <div>
-    <label for="viewSelector">Wähle eine Ansicht:</label>
-    <select id="viewSelector">
-      <option value="all">All</option>
-    </select>
-    <button id="makeCluster">ClusterTest</button>
-    <button id="clearCluster">Clear Cluster</button>
-  </div>
+  <div class="page-bg-shape page-bg-shape-a"></div>
+  <div class="page-bg-shape page-bg-shape-b"></div>
 
-  
+  <main class="page-shell graph-shell">
+    <header class="hero-panel compact reveal">
+      <a href="/" class="brand-link" title="Zur Startseite">
+        <img src="/favicon.png" alt="Symbol" class="brand-icon">
+        <span class="brand-name">RDF2Vis</span>
+      </a>
+      <h1>Projekt {{ project.name }}</h1>
+      <p>Interaktive Netzwerkansicht für RDF-Modelle mit Filterung nach View.</p>
+    </header>
 
-  <div id="network"></div>
+    <section class="toolbar reveal" style="--delay: 0.08s;">
+      <div class="toolbar-group">
+        <label for="viewSelector">Ansicht</label>
+        <select id="viewSelector">
+          <option value="all">Alle</option>
+        </select>
+      </div>
+      <div class="toolbar-actions">
+        <button id="makeCluster" class="btn btn-secondary" type="button">Cluster bilden</button>
+        <button id="clearCluster" class="btn" type="button">Cluster auflösen</button>
+      </div>
+    </section>
+
+    <p id="graphError" class="error-banner" aria-live="polite"></p>
+    <div id="network" class="reveal" style="--delay: 0.12s;"></div>
+  </main>
   <div id="popup"></div>
 
 
