@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, Response, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -23,6 +24,12 @@ projects = [
     {
         "id": "mmut-flexidug",
         "name": "FlexiDug MicroModels and Transformations",
+        "model": "data/mmut-flexidug.ttl",
+        "mapping": "data/mmut-mapping.yaml"
+    },
+    {
+        "id": "mut-flexidug",
+        "name": "FlexiDug MicroModels and Transformations (deprecated)",
         "model": "data/mut-flexidug.ttl",
         "mapping": "data/mmut-mapping.yaml"
     },
@@ -59,8 +66,10 @@ projects = [
     {
         "id": "sysml-squirrl-online",
         "name": "SQuIRRL SysML Model (online)",
-        "model": "http://localhost:3030/test/data?graph=http://squirrl.hpi.de/",
-        "mapping": "data/sysml-mapping.yaml"
+        "model": "https://rdf.frittenburger.de/test/data?graph=http://squirrl.hpi.de/",
+        "mapping": "data/sysml-mapping.yaml",
+        "auth_basic_user_env": "squirrl",
+        "auth_basic_pass_env": "K0xC2DoXPOPe6QHNUgYL8wZMwZ7oAqfB6lmLDRaExMaDxaJHGME9G44Xu4ey"
     },
 ]
 
@@ -90,7 +99,18 @@ def get_graph(projectId: str):
     project = next((p for p in projects if p["id"] == projectId), None)
     if not project:
         return Response(status_code=404, content="Project not found")
-    return gen_graph(project["model"], project["mapping"])
+
+    source_auth = None
+    token = project.get("auth_bearer_token_env")
+    if token:
+        source_auth = {"type": "bearer", "token": token}
+
+    username = project.get("auth_basic_user_env")
+    password = project.get("auth_basic_pass_env")
+    if not source_auth and username and password:
+        source_auth = {"type": "basic", "username": username, "password": password}
+
+    return gen_graph(project["model"], project["mapping"], source_auth=source_auth)
 
 
 # Dynamische Index-Seite

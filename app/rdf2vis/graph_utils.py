@@ -1,16 +1,68 @@
 import re
+import base64
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 from rdflib import Graph
 from .sparql_wrapper import SparQLWrapper
 from .mapping_reader import MappingReader
 
-def gen_graph(filename, mapping_yaml_file):
+
+def _is_http_url(source):
+    return source.startswith("http://") or source.startswith("https://")
+
+
+def _download_rdf(url, source_auth=None):
+    headers = {
+        "Accept": "text/turtle, application/x-turtle, application/ld+json;q=0.9, */*;q=0.1"
+    }
+    if source_auth:
+        auth_type = source_auth.get("type", "").lower()
+        if auth_type == "bearer" and source_auth.get("token"):
+            headers["Authorization"] = f"Bearer {source_auth['token']}"
+        elif auth_type == "basic" and source_auth.get("username") is not None and source_auth.get("password") is not None:
+            raw = f"{source_auth['username']}:{source_auth['password']}".encode("utf-8")
+            headers["Authorization"] = f"Basic {base64.b64encode(raw).decode('ascii')}"
+    print(f"Downloading RDF from {url} with headers: {headers} source_auth: {source_auth}")
+    req = Request(url, headers=headers)
+    try:
+        with urlopen(req) as response:
+            status_code = response.getcode()
+            final_url = response.geturl()
+            content_type = response.headers.get("Content-Type", "")
+            payload = response.read().decode("utf-8", errors="replace")
+
+            if status_code < 200 or status_code >= 300:
+                raise RuntimeError(f"RDF-Download fehlgeschlagen: HTTP {status_code} ({final_url})")
+
+            is_html = "text/html" in content_type.lower() or payload.lstrip().lower().startswith(("<!doctype html", "<html"))
+            if is_html:
+                preview = payload[:300].replace("\n", " ")
+                raise RuntimeError(
+                    "RDF-Download liefert HTML statt Turtle/JSON-LD. "
+                    f"Status={status_code}, URL={final_url}, Content-Type={content_type}, Body-Preview={preview}"
+                )
+
+            return payload
+    except HTTPError as exc:
+        body = exc.read().decode("utf-8", errors="replace") if exc.fp else ""
+        preview = body[:300].replace("\n", " ")
+        raise RuntimeError(f"RDF-Download fehlgeschlagen: HTTP {exc.code} für {url}. Body-Preview={preview}") from exc
+    except URLError as exc:
+        raise RuntimeError(f"RDF-Download fehlgeschlagen: Netzwerkfehler für {url}: {exc.reason}") from exc
+
+
+def gen_graph(filename, mapping_yaml_file, source_auth=None):
 
     # RDF-Graph erzeugen
     g = Graph()
 
     # Datei im Turtle-Format einlesen
-
-    g.parse(filename, format="turtle")
+    if _is_http_url(filename):
+        rdf_text = _download_rdf(filename, source_auth=source_auth)
+        print(f"Downloaded RDF data from {filename}:\n{rdf_text}...\n")
+        g.parse(data=rdf_text, format="turtle")
+    else:
+        g.parse(filename, format="turtle")
 
     # Anzahl der Tripel anzeigen
     print(f"Graph hat {len(g)} Tripel.\n")

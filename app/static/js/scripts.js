@@ -128,6 +128,27 @@ function createNetwork(graph) {
     });
 
 
+    $("#makeCluster").on("click", function () {
+      console.log("ClusterTest button clicked");
+      network.cluster({
+        joinCondition: function (node) {
+          // Alle Knoten mit id > 2 clustern
+          return node.id > 2;
+        },
+        clusterNodeProperties: {
+          id: "cluster1",
+          label: "Gruppe A",
+          shape: "box",
+          color: { background: "lightblue", border: "blue" },
+          borderWidth: 3
+        }
+      });
+    });
+    
+    $("#clearCluster").on("click", function () {
+      network.openCluster("cluster1");
+    })
+
 }
 
 function init() {
